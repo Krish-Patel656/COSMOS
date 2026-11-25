@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens
+
+   The palette is built around a very dark, slightly blue base so that the 3D
+   scenes — which are genuinely black in places — sit on the page without a
+   visible seam, and so that the one saturated accent per habitability band
+   reads as data rather than decoration.
+--------------------------------------------------------------------------- */
+@theme {
+  --color-void-950: #04060d;
+  --color-void-900: #070b16;
+  --color-void-850: #0b1020;
+  --color-void-800: #10172b;
+  --color-void-700: #1a2440;
+  --color-void-600: #273355;
+  --color-void-500: #3b4a73;
+
+  --color-starlight-50: #f5f8ff;
+  --color-starlight-100: #e6edff;
+  --color-starlight-200: #c7d4f5;
+  --color-starlight-300: #9badd4;
+  --color-starlight-400: #6f82ad;
+  --color-starlight-500: #4e5f85;
+
+  --color-aurora-300: #7dd3fc;
+  --color-aurora-400: #38bdf8;
+  --color-aurora-500: #0ea5e9;
+  --color-aurora-600: #0284c7;
+
+  --color-biosphere-300: #6ee7b7;
+  --color-biosphere-400: #34d399;
+  --color-biosphere-500: #10b981;
+
+  --color-solar-300: #fcd34d;
+  --color-solar-400: #fbbf24;
+  --color-solar-500: #f59e0b;
+
+  --color-ember-300: #fca5a5;
+  --color-ember-400: #f87171;
+  --color-ember-500: #ef4444;
+
+  --color-nebula-300: #d8b4fe;
+  --color-nebula-400: #c084fc;
+  --color-nebula-500: #a855f7;
+
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-panel: 1rem;
+
+  --animate-drift: drift 24s ease-in-out infinite;
+  --animate-twinkle: twinkle 4s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility cosmic-bg {
+  background-image:
+    radial-gradient(ellipse 80% 55% at 50% -10%, color-mix(in oklab, var(--color-aurora-500) 16%, transparent), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 110%, color-mix(in oklab, var(--color-nebula-500) 12%, transparent), transparent 50%);
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(2%, -1.5%, 0);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.75rem, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: var(--color-void-700);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-void-950);
+    color: var(--color-starlight-100);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* A single, consistent, clearly visible focus ring. Keyboard navigation
+     through a 3D explorer is hard enough without hunting for the cursor. */
+  :focus-visible {
+    outline: 2px solid var(--color-aurora-400);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  ::selection {
+    background-color: var(--color-aurora-500);
+    color: var(--color-void-950);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-void-900);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-void-600);
+    border-radius: 9999px;
+    border: 2px solid var(--color-void-900);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-void-500);
+  }
+
+  /* Honour the OS-level motion preference everywhere, including the ambient
+     background animations. The 3D scenes additionally stop auto-rotating and
+     freeze orbital motion — see useReducedMotion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Component utilities
+--------------------------------------------------------------------------- */
+@utility panel {
+  background-color: color-mix(in oklab, var(--color-void-850) 80%, transparent);
+  border: 1px solid var(--color-void-700);
+  border-radius: var(--radius-panel);
+  backdrop-filter: blur(12px);
+}
+
+@utility text-balance-pretty {
+  text-wrap: pretty;
+}
+
+/* Thin, unobtrusive range inputs that still present a large enough hit target
+   for pointer users. Used throughout the explorer filters and the simulator. */
+@utility range-input {
+  appearance: none;
+  width: 100%;
+  height: 1.25rem;
+  background: transparent;
+  cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: 0.25rem;
+    border-radius: 9999px;
+    background: var(--color-void-700);
+  }
+
+  &::-webkit-slider-thumb {
+    appearance: none;
+    margin-top: -0.3125rem;
+    height: 0.875rem;
+    width: 0.875rem;
+    border-radius: 9999px;
+    background: var(--color-aurora-400);
+    border: 2px solid var(--color-void-950);
+    box-shadow: 0 0 0 1px var(--color-aurora-600);
+  }
+
+  &::-moz-range-track {
+    height: 0.25rem;
+    border-radius: 9999px;
+    background: var(--color-void-700);
+  }
+
+  &::-moz-range-thumb {
+    height: 0.875rem;
+    width: 0.875rem;
+    border: 2px solid var(--color-void-950);
+    border-radius: 9999px;
+    background: var(--color-aurora-400);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+/* Screen-reader-only text that becomes visible when focused — used for the
+   skip link. */
+@utility sr-focusable {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+
+  &:focus {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0.75rem 1.25rem;
+    overflow: visible;
+    clip-path: none;
+    border-radius: 0.5rem;
+    background: var(--color-aurora-500);
+    color: var(--color-void-950);
+    font-weight: 600;
+  }
+}
